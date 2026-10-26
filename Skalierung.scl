@@ -1,0 +1,31 @@
+FUNCTION_BLOCK "FB_Skalierung"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+   VAR_INPUT
+      i_RawValue : INT;       // Roher Analogwert (z.B. 0..27648)
+      i_MinIn    : REAL;      // Minimaler Rohwert
+      i_MaxIn    : REAL;      // Maximaler Rohwert
+      i_MinOut   : REAL;      // Minimale physikalische Grenze (z.B. 0.0 bar)
+      i_MaxOut   : REAL;      // Maximale physikalische Grenze (z.B. 10.0 bar)
+   END_VAR
+
+   VAR_OUTPUT
+      q_ScaledValue : REAL;   // Skalierter physikalischer Wert
+   END_VAR
+
+   VAR
+      stat_RawReal : REAL;
+   END_VAR
+
+BEGIN
+    // Konvertiere Eingang in REAL für die Berechnung
+    #stat_RawReal := INT_TO_REAL(#i_RawValue);
+    
+    // Lineare Skalierung (Dreisatz)
+    IF (#i_MaxIn - #i_MinIn) <> 0.0 THEN
+        #q_ScaledValue := ((#stat_RawReal - #i_MinIn) / (#i_MaxIn - #i_MinIn)) 
+                          * (#i_MaxOut - #i_MinOut) + #i_MinOut;
+    ELSE
+        #q_ScaledValue := 0.0;
+    END_IF;
+END_FUNCTION_BLOCK
